@@ -34,12 +34,9 @@ public class OptimizedDroppedItem extends EntityItem {
 
         this.lastUpdate = currentTick;
 
-        this.timing.startTiming();
-
         if (this.age > 4800 || this.isInsideOfFire()) {
             this.close();
-            this.timing.stopTiming();
-            return false;
+            return true;
         }
 
         boolean hasUpdate = this.entityBaseTick(tickDiff);
@@ -47,7 +44,22 @@ public class OptimizedDroppedItem extends EntityItem {
         if (this.isAlive()) {
             Entity[] e = this.getLevel().getNearbyEntities(getBoundingBox().grow(1, 1, 1), this, false);
 
-            if (this.age % 200 == 0 && this.onGround && this.item != null && this.isAlive()) {
+            if (this.pickupDelay > 0 && this.pickupDelay < 32767) {
+                this.pickupDelay -= tickDiff;
+                if (this.pickupDelay < 0) {
+                    this.pickupDelay = 0;
+                }
+            } else {
+                for (Entity entity : e) {
+                    if (entity instanceof Player) {
+                        if (((Player) entity).pickupEntity(this, true)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (this.age % 200 == 0 && this.onGround && this.item != null) {
                 if (this.item.getCount() < this.item.getMaxStackSize()) {
                     for (Entity entity : e) {
                         if (entity instanceof EntityItem) {
@@ -78,21 +90,6 @@ public class OptimizedDroppedItem extends EntityItem {
                 }
             }
 
-            if (this.pickupDelay > 0 && this.pickupDelay < 32767) {
-                this.pickupDelay -= tickDiff;
-                if (this.pickupDelay < 0) {
-                    this.pickupDelay = 0;
-                }
-            } else {
-                for (Entity entity : e) {
-                    if (entity instanceof Player) {
-                        if (((Player) entity).pickupEntity(this, true)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-
             if (this.isInsideOfWater()) {
                 this.motionY = -0.02;
             } else if (!this.isOnGround()) {
@@ -117,8 +114,6 @@ public class OptimizedDroppedItem extends EntityItem {
 
             this.updateMovement();
         }
-
-        this.timing.stopTiming();
 
         return hasUpdate || !this.onGround || Math.abs(this.motionX) > 0.00001 || Math.abs(this.motionY) > 0.00001 || Math.abs(this.motionZ) > 0.00001;
     }
