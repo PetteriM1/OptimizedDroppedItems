@@ -7,6 +7,6 @@ public class Main extends PluginBase {
 
     public void onEnable() {
         Entity.registerEntity("Item", OptimizedDroppedItem.class);
-        getLogger().info("Optimized dropped item entity registered");
+        getLogger().info("§aOptimized dropped item entity registered");
     }
 }

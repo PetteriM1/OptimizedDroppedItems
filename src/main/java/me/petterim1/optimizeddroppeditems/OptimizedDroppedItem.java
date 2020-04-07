@@ -42,48 +42,49 @@ public class OptimizedDroppedItem extends EntityItem {
             return false;
         }
 
-        if (this.age % 200 == 0 && this.onGround && this.item != null && this.isAlive()) {
-            if (this.item.getCount() < this.item.getMaxStackSize()) {
-                Entity[] e = this.getLevel().getNearbyEntities(getBoundingBox().grow(1, 1, 1), this, false);
-                for (Entity entity : e) {
-                    if (entity instanceof EntityItem) {
-                        if (!entity.isAlive()) {
-                            continue;
-                        }
-                        Item closeItem = ((EntityItem) entity).getItem();
-                        if (!closeItem.equals(item, true, true)) {
-                            continue;
-                        }
-                        if (!entity.isOnGround()) {
-                            continue;
-                        }
-                        int newAmount = this.item.getCount() + closeItem.getCount();
-                        if (newAmount > this.item.getMaxStackSize()) {
-                            continue;
-                        }
-                        closeItem.setCount(0);
-                        entity.close();
-                        this.item.setCount(newAmount);
-                        EntityEventPacket packet = new EntityEventPacket();
-                        packet.eid = getId();
-                        packet.data = newAmount;
-                        packet.event = EntityEventPacket.MERGE_ITEMS;
-                        Server.broadcastPacket(this.getLevel().getPlayers().values(), packet);
-                    }
-                }
-            }
-        }
-
         boolean hasUpdate = this.entityBaseTick(tickDiff);
 
         if (this.isAlive()) {
+            Entity[] e = this.getLevel().getNearbyEntities(getBoundingBox().grow(1, 1, 1), this, false);
+
+            if (this.age % 200 == 0 && this.onGround && this.item != null && this.isAlive()) {
+                if (this.item.getCount() < this.item.getMaxStackSize()) {
+                    for (Entity entity : e) {
+                        if (entity instanceof EntityItem) {
+                            if (!entity.isAlive()) {
+                                continue;
+                            }
+                            Item closeItem = ((EntityItem) entity).getItem();
+                            if (!closeItem.equals(item, true, true)) {
+                                continue;
+                            }
+                            if (!entity.isOnGround()) {
+                                continue;
+                            }
+                            int newAmount = this.item.getCount() + closeItem.getCount();
+                            if (newAmount > this.item.getMaxStackSize()) {
+                                continue;
+                            }
+                            closeItem.setCount(0);
+                            entity.close();
+                            this.item.setCount(newAmount);
+                            EntityEventPacket packet = new EntityEventPacket();
+                            packet.eid = getId();
+                            packet.data = newAmount;
+                            packet.event = EntityEventPacket.MERGE_ITEMS;
+                            Server.broadcastPacket(this.getLevel().getPlayers().values(), packet);
+                        }
+                    }
+                }
+            }
+
             if (this.pickupDelay > 0 && this.pickupDelay < 32767) {
                 this.pickupDelay -= tickDiff;
                 if (this.pickupDelay < 0) {
                     this.pickupDelay = 0;
                 }
             } else {
-                for (Entity entity : this.level.getNearbyEntities(this.boundingBox.grow(1, 0.5, 1), this)) {
+                for (Entity entity : e) {
                     if (entity instanceof Player) {
                         if (((Player) entity).pickupEntity(this, true)) {
                             return true;
@@ -100,14 +101,14 @@ public class OptimizedDroppedItem extends EntityItem {
 
             this.move(this.motionX, this.motionY, this.motionZ);
 
-            double friction = 1 - this.getDrag();
+            double friction = 0.98;
 
             if (this.onGround && (Math.abs(this.motionX) > 0.00001 || Math.abs(this.motionZ) > 0.00001)) {
                 friction *= this.getLevel().getBlock(this.temporalVector.setComponents((int) Math.floor(this.x), (int) Math.floor(this.y - 1), (int) Math.floor(this.z) - 1)).getFrictionFactor();
             }
 
             this.motionX *= friction;
-            this.motionY *= 1 - this.getDrag();
+            this.motionY *= 0.98;
             this.motionZ *= friction;
 
             if (this.onGround) {
