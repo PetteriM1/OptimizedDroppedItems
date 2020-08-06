@@ -17,7 +17,7 @@ public class OptimizedDroppedItem extends EntityItem {
 
     @Override
     public String getName() {
-        return "OptimizedDroppedItem";
+        return "Item";
     }
 
     @Override
@@ -40,8 +40,9 @@ public class OptimizedDroppedItem extends EntityItem {
         }
 
         boolean hasUpdate = this.entityBaseTick(tickDiff);
+        if (!hasUpdate) return false;
 
-        if (this.isAlive()) {
+        if (!closed && this.isAlive()) {
             Entity[] e = this.getLevel().getNearbyEntities(getBoundingBox().grow(1, 1, 1), this, false);
 
             if (this.pickupDelay > 0 && this.pickupDelay < 32767) {
@@ -109,6 +110,34 @@ public class OptimizedDroppedItem extends EntityItem {
             this.updateMovement();
         }
 
-        return hasUpdate || !this.onGround || Math.abs(this.motionX) > 0.00001 || Math.abs(this.motionY) > 0.00001 || Math.abs(this.motionZ) > 0.00001;
+        return true;
+    }
+
+    @Override
+    public boolean entityBaseTick(int tickDiff) {
+        this.blocksAround = null;
+        this.collisionBlocks = null;
+        this.justCreated = false;
+
+        if (!this.isAlive()) {
+            this.despawnFromAll();
+            this.close();
+            return false;
+        } else if (this.closed) {
+            this.despawnFromAll();
+            return false;
+        } else {
+            this.checkBlockCollision();
+
+            if (this.y < 0 || this.fireTicks > 0) {
+                this.despawnFromAll();
+                this.close();
+                return false;
+            }
+
+            this.age += tickDiff;
+            this.ticksLived += tickDiff;
+            return true;
+        }
     }
 }
