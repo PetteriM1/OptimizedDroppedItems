@@ -2,6 +2,8 @@ package me.petterim1.optimizeddroppeditems;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.block.Block;
+import cn.nukkit.block.BlockFire;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.item.EntityItem;
 import cn.nukkit.item.Item;
@@ -34,7 +36,7 @@ public class OptimizedDroppedItem extends EntityItem {
 
         this.lastUpdate = currentTick;
 
-        if (this.age > 4800 || this.isInsideOfFire()) {
+        if (this.age > 4800) {
             this.close();
             return true;
         }
@@ -136,8 +138,18 @@ public class OptimizedDroppedItem extends EntityItem {
             }
 
             this.age += tickDiff;
-            this.ticksLived += tickDiff;
             return true;
+        }
+    }
+
+    @Override
+    protected void checkBlockCollision() {
+        for (Block block : this.getCollisionBlocks()) {
+            if (block instanceof BlockFire) {
+                this.close();
+                return;
+            }
+            block.onEntityCollide(this);
         }
     }
 }
