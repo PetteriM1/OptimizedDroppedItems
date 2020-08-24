@@ -9,5 +9,7 @@ public class Main extends PluginBase {
     public void onEnable() {
         Entity.registerEntity("Item", OptimizedDroppedItem.class);
         getLogger().info("§aOptimized dropped item entity registered");
+        Entity.registerEntity("XpOrb", OptimizedXPOrb.class);
+        getLogger().info("§aOptimized xp orb entity registered");
     }
 }
