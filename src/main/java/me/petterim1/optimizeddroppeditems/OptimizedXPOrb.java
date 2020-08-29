@@ -10,6 +10,7 @@ public class OptimizedXPOrb extends EntityXPOrb {
 
     private int age;
     private int pickupDelay;
+    private int exp;
 
     public OptimizedXPOrb(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
@@ -128,5 +129,70 @@ public class OptimizedXPOrb extends EntityXPOrb {
             this.age += tickDiff;
             return true;
         }
+    }
+
+    @Override
+    protected void initEntity() {
+        super.initEntity();
+        this.setMaxHealth(5);
+        this.setHealth(5.0F);
+        if (this.namedTag.contains("Health")) {
+            this.setHealth(this.namedTag.getShort("Health"));
+        }
+
+        if (this.namedTag.contains("Age")) {
+            this.age = this.namedTag.getShort("Age");
+        }
+
+        if (this.namedTag.contains("PickupDelay")) {
+            this.pickupDelay = this.namedTag.getShort("PickupDelay");
+        }
+
+        if (this.namedTag.contains("Value")) {
+            this.exp = this.namedTag.getShort("Value");
+        }
+
+        if (this.exp <= 0) {
+            this.exp = 1;
+        }
+
+        this.dataProperties.putInt(DATA_EXPERIENCE_VALUE, this.exp);
+    }
+
+    @Override
+    public void saveNBT() {
+        super.saveNBT();
+        this.namedTag.putShort("Health", (int) getHealth());
+        this.namedTag.putShort("Age", age);
+        this.namedTag.putShort("PickupDelay", pickupDelay);
+        this.namedTag.putShort("Value", exp);
+    }
+
+    @Override
+    public int getExp() {
+        return exp;
+    }
+
+    @Override
+    public void setExp(int exp) {
+        if (exp <= 0) {
+            throw new IllegalArgumentException("XP amount must be greater than 0, got " + exp);
+        }
+        this.exp = exp;
+    }
+
+    @Override
+    public boolean canCollideWith(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public int getPickupDelay() {
+        return pickupDelay;
+    }
+
+    @Override
+    public void setPickupDelay(int pickupDelay) {
+        this.pickupDelay = pickupDelay;
     }
 }
