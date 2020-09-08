@@ -63,7 +63,7 @@ public class OptimizedXPOrb extends EntityXPOrb {
 
             if (this.closestPlayer == null || this.closestPlayer.distanceSquared(this) > 64.0D) {
                 for (Player p : level.getPlayers().values()) {
-                    if (!p.isSpectator() && p.distance(this) <= 8) {
+                    if (!p.isSpectator() && p.distanceSquared(this) <= 64.0D) {
                         this.closestPlayer = p;
                         break;
                     }
