@@ -11,6 +11,8 @@ import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.EntityEventPacket;
 
+import java.util.List;
+
 public class OptimizedDroppedItem extends EntityItem {
 
     public OptimizedDroppedItem(FullChunk chunk, CompoundTag nbt) {
@@ -144,12 +146,15 @@ public class OptimizedDroppedItem extends EntityItem {
 
     @Override
     protected void checkBlockCollision() {
-        for (Block block : this.getCollisionBlocks()) {
-            if (block instanceof BlockFire) {
-                this.close();
-                return;
+        List<Block> blocks = this.getBlocksAround();
+        for (Block block : blocks) {
+            if (block.collidesWithBB(this.getBoundingBox(), true)) {
+                if (block instanceof BlockFire) {
+                    this.close();
+                    return;
+                }
+                block.onEntityCollide(this);
             }
-            block.onEntityCollide(this);
         }
     }
 }
