@@ -47,7 +47,7 @@ public class OptimizedDroppedItem extends EntityItem {
         if (!hasUpdate) return false;
 
         if (!closed && this.isAlive()) {
-            Entity[] e = this.getLevel().getNearbyEntities(getBoundingBox().grow(1, 1, 1), this, false);
+            Entity[] e = null;
 
             if (this.pickupDelay > 0 && this.pickupDelay < 32767) {
                 this.pickupDelay -= tickDiff;
@@ -55,6 +55,7 @@ public class OptimizedDroppedItem extends EntityItem {
                     this.pickupDelay = 0;
                 }
             } else {
+                e = this.getLevel().getNearbyEntities(getBoundingBox().grow(1, 1, 1), this, false);
                 for (Entity entity : e) {
                     if (entity instanceof Player) {
                         if (((Player) entity).pickupEntity(this, true)) {
@@ -66,6 +67,9 @@ public class OptimizedDroppedItem extends EntityItem {
 
             if (this.age % 200 == 0 && this.onGround && this.item != null) {
                 if (this.item.getCount() < this.item.getMaxStackSize()) {
+                    if (e == null) {
+                        e = this.getLevel().getNearbyEntities(getBoundingBox().grow(1, 1, 1), this, false);
+                    }
                     for (Entity entity : e) {
                         if (entity instanceof EntityItem) {
                             if (!entity.isAlive()) {
@@ -101,8 +105,6 @@ public class OptimizedDroppedItem extends EntityItem {
                 this.motionY -= 0.04;
             }
 
-            this.move(this.motionX, this.motionY, this.motionZ);
-
             this.motionX *= 0.9;
             this.motionY *= 0.98;
             this.motionZ *= 0.9;
@@ -111,7 +113,9 @@ public class OptimizedDroppedItem extends EntityItem {
                 this.motionY *= -0.5;
             }
 
-            this.updateMovement();
+            if (this.move(this.motionX, this.motionY, this.motionZ)) {
+                this.updateMovement();
+            }
         }
 
         return true;
