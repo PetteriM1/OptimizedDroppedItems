@@ -93,7 +93,7 @@ public class OptimizedDroppedItem extends EntityItem {
                             packet.eid = getId();
                             packet.data = newAmount;
                             packet.event = EntityEventPacket.MERGE_ITEMS;
-                            Server.broadcastPacket(this.getLevel().getPlayers().values(), packet);
+                            Server.broadcastPacket(this.getViewers().values(), packet);
                         }
                     }
                 }
